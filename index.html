@@ -235,17 +235,18 @@
   line-height: 1.1 !important;
   white-space: nowrap !important;
 }
-/* 상단바 전체 여백 및 내보내기 정렬 조절 */
+/* 상단바 전체 컨텐츠 폭 제한 및 중앙 정렬 */
+.topbar-row,
+.progress-wrap,
+.actions-row {
+  max-width: 640px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
 .topbar {
   padding-left: 20px !important;
   padding-right: 20px !important;
-}
-
-/* Progress 및 버튼 영역 좌우 여백 확보 */
-.progress-wrap,
-.actions-row {
-  margin-left: 4px !important;
-  margin-right: 4px !important;
 }
 </style>
 </head>
