@@ -7,6 +7,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+<!-- 카카오톡 / SNS 링크 공유 시 썸네일 설정 -->
+<meta property="og:title" content="Pelicana LA - Inventory Count">
+<meta property="og:description" content="Pelicana LA Store Inventory Management System">
+<meta property="og:image" content="https://semikim-dataanalytics.github.io/pelicana-la-inventory/logo.png">
+<meta property="og:image:width" content="800">
+<meta property="og:image:height" content="800">
 <style>
   :root {
   /* 브랜드 대표 색상 */
@@ -203,18 +209,22 @@
 
 <div class="topbar" id="topbar">
     <div class="topbar-row">
-      <div class="brand" style="display: flex; align-items: center; gap: 12px;">
-        <img src="./logo-basic.png" alt="Pelicana Logo" style="height: 44px; width: 44px; object-fit: contain;">
-        <div style="display: flex; flex-direction: column; justify-content: center; line-height: 1.2;">
-          <span class="eyebrow" style="display: block; font-size: 13px; text-transform: uppercase;">Los Angeles</span>
-          <h1 style="margin: 0; font-size: 19px; font-weight: 700;">Inventory Count</h1>
+      <!-- 왼쪽: 원형 로고 + 2줄 텍스트 영역 -->
+      <div class="brand" style="display: flex; align-items: center; gap: 14px;">
+        <img src="./logo-basic.png" alt="Pelicana Logo" style="height: 56px; width: 56px; min-width: 56px; object-fit: contain;">
+        <div style="display: flex; flex-direction: column; justify-content: center; line-height: 1.15;">
+          <span class="eyebrow" style="display: block; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">LOS ANGELES</span>
+          <h1 style="margin: 0; font-size: 22px; font-weight: 800; white-space: nowrap;">Inventory Count</h1>
         </div>
       </div>
+
+      <!-- 오른쪽: 날짜 입력창 -->
       <div class="date-field">
         <label for="countDate">Count Date</label>
         <input type="date" id="countDate">
       </div>
     </div>
+  </div>
   </div>
   </div>
   </div>
