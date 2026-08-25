@@ -209,18 +209,13 @@
 
 <div class="topbar" id="topbar">
     <div class="topbar-row">
-      <!-- 왼쪽: 원형 로고 + 2줄 텍스트 (가로 배치 묶음) -->
-      <div class="brand" style="display: flex; align-items: center; gap: 14px;">
-        <div style="flex-shrink: 0; display: flex; align-items: center;">
-          <img src="./logo-basic.png" alt="Pelicana Logo" style="height: 52px; width: 52px; object-fit: contain; display: inline-block; vertical-align: middle;">
-        </div>
-        <div style="display: flex; flex-direction: column; justify-content: center; text-align: left;">
-          <span class="eyebrow" style="display: block; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; line-height: 1.2; margin-bottom: 2px;">LOS ANGELES</span>
-          <h1 style="margin: 0; font-size: 21px; font-weight: 800; line-height: 1.1; white-space: nowrap;">Inventory Count</h1>
+      <div class="brand-header">
+        <img src="./logo-basic.png" alt="Pelicana Logo" class="brand-logo-img">
+        <div class="brand-title-group">
+          <span class="eyebrow">LOS ANGELES</span>
+          <h1>Inventory Count</h1>
         </div>
       </div>
-
-      <!-- 오른쪽: 날짜 입력창 -->
       <div class="date-field">
         <label for="countDate">Count Date</label>
         <input type="date" id="countDate">
