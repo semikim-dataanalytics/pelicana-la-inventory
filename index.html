@@ -202,19 +202,20 @@
 <body>
 
 <div class="topbar" id="topbar">
-  <div class="topbar-row">
-  <div class="brand" style="display: flex; align-items: center; gap: 10px;">
-    <img src="./logo.png" alt="Pelicana Logo" style="height: 100px; width=auto">
-    <div>
-      <span class="eyebrow" style="display: block;">LA Store</span>
-      <h1 style="margin: 0; font-size: 20px;">Inventory Count</h1>
+    <div class="topbar-row">
+      <div class="brand">
+        <span class="eyebrow" style="display: block;">LA Store</span>
+        <h1 style="margin: 0; font-size: 20px;">Inventory Count</h1>
+      </div>
+      <div class="header-right" style="display: flex; align-items: center; gap: 12px;">
+        <div class="date-field">
+          <label for="countDate">Count Date</label>
+          <input type="date" id="countDate">
+        </div>
+        <img src="./logo-basic.png" alt="Pelicana Logo" style="height: 42px; width: 42px; object-fit: contain;">
+      </div>
     </div>
   </div>
-  <div class="date-field">
-    <label for="countDate">Count Date</label>
-    <input type="date" id="countDate">
-  </div>
-</div>
   </div>
   <div class="progress-wrap">
     <div class="progress-labels"><span>Progress</span><span><b id="progressCount">0</b> / 90</span></div>
