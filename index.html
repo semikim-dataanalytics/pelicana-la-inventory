@@ -9,7 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#F4F5F7;
+    --bg:#b42f2b;
     --surface:#FFFFFF;
     --ink:#161A2B;
     --muted:#697086;
@@ -191,14 +191,18 @@
 
 <div class="topbar" id="topbar">
   <div class="topbar-row">
-    <div class="brand">
-      <span class="eyebrow">Pelicana &middot; LA Store</span>
-      <h1>Inventory Count</h1>
+  <div class="brand" style="display: flex; align-items: center; gap: 10px;">
+    <img src="logo.png" alt="Pelicana Logo" style="height: 36px;">
+    <div>
+      <span class="eyebrow" style="display: block;">LA Store</span>
+      <h1 style="margin: 0; font-size: 20px;">Inventory Count</h1>
     </div>
-    <div class="date-field">
-      <label for="countDate">Count Date</label>
-      <input type="date" id="countDate">
-    </div>
+  </div>
+  <div class="date-field">
+    <label for="countDate">Count Date</label>
+    <input type="date" id="countDate">
+  </div>
+</div>
   </div>
   <div class="progress-wrap">
     <div class="progress-labels"><span>Progress</span><span><b id="progressCount">0</b> / 90</span></div>
