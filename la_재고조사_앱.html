@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>LA Inventory Count</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F4F5F7;
+    --surface:#FFFFFF;
+    --ink:#161A2B;
+    --muted:#697086;
+    --border:#E2E5EA;
+    --accent:#0052CC;
+    --accent-ink:#FFFFFF;
+    --accent-soft:#E6EFFD;
+    --success:#00875A;
+    --success-soft:#E1F5EC;
+    --warn:#FFAB00;
+    --warn-soft:#FFF4DC;
+    --disabled-bg:#EDEEF1;
+    --radius:12px;
+    --sans: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans KR', sans-serif;
+    --mono: ui-monospace, 'SF Mono', 'Cascadia Mono', Consolas, 'Roboto Mono', monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:var(--sans);-webkit-tap-highlight-color:transparent;}
+  body{padding-bottom:100px;}
+
+  /* ---------- Header ---------- */
+  .topbar{
+    position:sticky;top:0;z-index:40;
+    background:var(--surface);color:var(--ink);
+    padding:16px 16px 14px;
+    box-shadow:0 1px 0 var(--border), 0 4px 10px rgba(22,26,43,.04);
+  }
+  .topbar-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}
+  .brand{display:flex;flex-direction:column;gap:3px;}
+  .brand .eyebrow{
+    font-size:11px;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--accent);font-weight:700;
+  }
+  .brand h1{
+    margin:0;font-weight:800;letter-spacing:-.01em;
+    font-size:21px;color:var(--ink);
+  }
+  .date-field{display:flex;flex-direction:column;align-items:flex-end;gap:3px;}
+  .date-field label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:700;}
+  .date-field input{
+    background:var(--bg);border:1.5px solid var(--border);border-radius:8px;color:var(--ink);
+    font-family:var(--sans);font-weight:700;
+    font-size:13px;text-align:right;padding:5px 8px;width:128px;
+  }
+  .progress-wrap{margin-top:14px;}
+  .progress-labels{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:600;}
+  .progress-labels b{color:var(--ink);font-weight:800;}
+  .progress-track{height:8px;border-radius:999px;background:var(--disabled-bg);overflow:hidden;}
+  .progress-fill{height:100%;background:var(--success);border-radius:999px;transition:width .25s ease;}
+
+  .actions-row{display:flex;gap:8px;margin-top:14px;}
+  .btn{
+    font-family:var(--sans);font-weight:700;font-size:13px;border-radius:10px;
+    border:1.5px solid var(--border);padding:10px 14px;cursor:pointer;display:inline-flex;
+    align-items:center;gap:6px;justify-content:center;transition:transform .08s ease, opacity .15s;
+    background:var(--surface);color:var(--ink);
+  }
+  .btn:active{transform:scale(.97);}
+  .btn-ghost{background:var(--bg);color:var(--ink);}
+  .btn-primary{background:var(--accent);color:#fff;border-color:var(--accent);flex:1;}
+
+  /* ---------- Category nav — pinned under header ---------- */
+  .catnav{
+    position:sticky;z-index:35;background:var(--bg);
+    display:flex;gap:6px;overflow-x:auto;padding:10px 16px;
+    box-shadow:0 1px 0 var(--border);
+    scrollbar-width:none;
+  }
+  .catnav::-webkit-scrollbar{display:none;}
+  .catchip{
+    flex:0 0 auto;font-size:12px;font-weight:700;
+    padding:7px 13px;border-radius:999px;background:var(--surface);border:1.5px solid var(--border);
+    color:var(--muted);white-space:nowrap;cursor:pointer;
+  }
+  .catchip.done{background:var(--success);border-color:var(--success);color:#fff;}
+
+  /* ---------- Sections ---------- */
+  main{max-width:640px;margin:0 auto;padding:4px 0 0;}
+  .section{padding:18px 16px 4px;}
+  .section-head{
+    display:flex;align-items:center;justify-content:space-between;
+    margin-bottom:10px;
+  }
+  .section-head h2{
+    margin:0;font-size:13px;text-transform:uppercase;
+    letter-spacing:.06em;font-weight:800;color:var(--ink);
+    display:flex;align-items:center;gap:7px;
+  }
+  .section-head h2::before{
+    content:'';width:8px;height:8px;border-radius:2px;background:var(--accent);display:inline-block;
+  }
+  .section-head .count{font-size:11.5px;color:var(--muted);font-weight:700;}
+
+  /* ---------- Item card ---------- */
+  .item{
+    background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);
+    padding:14px 14px 13px;margin-bottom:10px;transition:border-color .15s, box-shadow .15s;
+    box-shadow:0 1px 2px rgba(22,26,43,.04);
+  }
+  .item.touched{border-color:var(--success);box-shadow:0 2px 8px rgba(0,135,90,.12);}
+  .item-head{display:flex;justify-content:space-between;gap:10px;margin-bottom:11px;}
+  .item-name{font-weight:800;font-size:14.5px;line-height:1.3;}
+  .item-pack{font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-top:3px;}
+  .result-chip{
+    font-family:var(--mono);font-size:12px;font-weight:800;color:var(--muted);
+    background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:5px 9px;white-space:nowrap;
+    height:fit-content;align-self:flex-start;
+  }
+  .item.touched .result-chip{background:var(--success-soft);border-color:var(--success);color:var(--success);}
+
+  .qty-row{display:flex;gap:8px;}
+  .qty-block{flex:1;display:flex;flex-direction:column;gap:5px;}
+  .qty-block.disabled{opacity:.45;}
+  .qty-label{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:800;}
+  .qtybox{border:1.5px solid var(--border);border-radius:10px;background:var(--bg);transition:border-color .12s, box-shadow .12s;}
+  .qtybox:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft);background:var(--surface);}
+  .qty-block.disabled .qtybox{background:var(--disabled-bg);}
+  .qtybox input{
+    width:100%;border:none;background:transparent;text-align:center;
+    font-family:var(--sans);font-size:16px;font-weight:800;color:var(--ink);
+    -moz-appearance:textfield;padding:10px 0;
+  }
+  .qtybox input::-webkit-outer-spin-button,
+  .qtybox input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
+  .qtybox input:disabled{color:var(--muted);}
+
+  .note-flash{
+    font-size:11px;font-weight:700;color:var(--warn);margin-top:8px;min-height:14px;
+    display:flex;align-items:center;gap:5px;
+  }
+
+  /* ---------- FAB / result panel ---------- */
+  .fab{
+    position:fixed;left:16px;right:16px;bottom:16px;z-index:50;max-width:608px;margin:0 auto;
+    background:var(--accent);color:#fff;border:none;border-radius:12px;padding:16px;
+    font-family:var(--sans);font-weight:800;font-size:14.5px;display:flex;align-items:center;
+    justify-content:center;gap:8px;box-shadow:0 8px 24px rgba(0,82,204,.35);cursor:pointer;
+  }
+  .overlay{
+    position:fixed;inset:0;background:rgba(22,26,43,.5);z-index:60;display:none;
+    align-items:flex-end;justify-content:center;
+  }
+  .overlay.open{display:flex;}
+  .panel{
+    background:var(--bg);width:100%;max-width:640px;border-radius:20px 20px 0 0;
+    max-height:88vh;display:flex;flex-direction:column;overflow:hidden;
+  }
+  .panel-head{
+    padding:18px 18px 12px;border-bottom:1.5px solid var(--border);display:flex;
+    justify-content:space-between;align-items:center;background:var(--surface);
+  }
+  .panel-head h3{margin:0;font-size:16px;font-weight:800;}
+  .panel-close{background:var(--bg);border:1.5px solid var(--border);border-radius:8px;font-size:16px;color:var(--muted);cursor:pointer;padding:5px 9px;}
+  .panel-body{padding:16px 18px;overflow-y:auto;}
+  .toggle-row{display:flex;gap:8px;margin-bottom:12px;}
+  .toggle-btn{
+    flex:1;font-size:12px;font-weight:800;padding:9px;border-radius:10px;
+    border:1.5px solid var(--border);background:var(--surface);color:var(--muted);cursor:pointer;
+  }
+  .toggle-btn.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+  textarea.out{
+    width:100%;min-height:220px;font-family:var(--mono);font-size:12px;line-height:1.6;
+    border:1.5px solid var(--border);border-radius:10px;padding:12px;background:var(--surface);color:var(--ink);
+    resize:vertical;
+  }
+  .hint{font-size:12px;color:var(--muted);margin:10px 0 12px;line-height:1.55;font-weight:600;}
+  .panel-actions{display:flex;gap:8px;padding:14px 18px calc(env(safe-area-inset-bottom,0px) + 16px);border-top:1.5px solid var(--border);background:var(--surface);}
+  .copy-toast{
+    position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(10px);
+    background:var(--ink);color:#fff;font-size:12.5px;font-weight:800;
+    padding:10px 18px;border-radius:999px;z-index:70;opacity:0;pointer-events:none;transition:opacity .2s, transform .2s;
+  }
+  .copy-toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  .empty-missing{font-size:11.5px;color:var(--muted);padding:0 18px 8px;font-weight:600;}
+</style>
+</head>
+<body>
+
+<div class="topbar" id="topbar">
+  <div class="topbar-row">
+    <div class="brand">
+      <span class="eyebrow">Pelicana &middot; LA Store</span>
+      <h1>Inventory Count</h1>
+    </div>
+    <div class="date-field">
+      <label for="countDate">Count Date</label>
+      <input type="date" id="countDate">
+    </div>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-labels"><span>Progress</span><span><b id="progressCount">0</b> / 90</span></div>
+    <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+  </div>
+  <div class="actions-row">
+    <button class="btn btn-ghost" id="resetBtn">Reset</button>
+    <button class="btn btn-ghost" id="jumpBtn">Jump to next</button>
+  </div>
+</div>
+
+<div class="catnav" id="catnav"></div>
+
+<main id="main"></main>
+
+<button class="fab" id="fabBtn">Review &amp; Copy Results</button>
+
+<div class="overlay" id="overlay">
+  <div class="panel">
+    <div class="panel-head">
+      <h3>This Week's Inventory</h3>
+      <button class="panel-close" id="closePanel">✕</button>
+    </div>
+    <div class="panel-body">
+      <div class="toggle-row">
+        <button class="toggle-btn active" id="viewValuesOnly">Values only (paste into L)</button>
+        <button class="toggle-btn" id="viewWithNames">Name + Value</button>
+      </div>
+      <div class="hint" id="panelHint">
+        Click cell <b>L2</b> in the '인벤&amp;주문' sheet, then paste (Ctrl/Cmd+V). All 90 items fill L2:L91 in order.
+      </div>
+      <textarea class="out" id="outArea" readonly></textarea>
+      <div class="empty-missing" id="missingNote"></div>
+    </div>
+    <div class="panel-actions">
+      <button class="btn btn-ghost" id="selectAllBtn" style="flex:1;">Select All</button>
+      <button class="btn btn-primary" id="copyBtn">Copy</button>
+    </div>
+  </div>
+</div>
+
+<div class="copy-toast" id="toast">Copied</div>
+
+<script>
+const ITEMS = [{"n": "Chicken Box (S)", "c": "Supply", "mu": "BOX", "su": "PACK", "f": 4.0, "pd": "(4pk x 25ea)/box"}, {"n": "Chicken Box (L)", "c": "Supply", "mu": "BOX", "su": "PACK", "f": 4.0, "pd": "(4pk x 25ea)/box"}, {"n": "Logo 32 oz Plastic Bowl", "c": "Supply", "mu": "PACK", "su": "-", "f": null, "pd": "50ea/pk"}, {"n": "Logo 32 oz Plastic Bowl Lid", "c": "Supply", "mu": "PACK", "su": "-", "f": null, "pd": "50ea/pk"}, {"n": "Logo Side Box #1", "c": "Supply", "mu": "BOX", "su": "PACK", "f": 4.0, "pd": "(4pk x 50ea)/box"}, {"n": "Logo To-Go Bag", "c": "Supply", "mu": "BOX", "su": "PACK", "f": 20.0, "pd": "(20pk x 50ea)/box"}, {"n": "Cup Gangjung Box", "c": "Supply", "mu": "PACK", "su": "-", "f": null, "pd": "50ea/pk"}, {"n": "Cup Gangjung Box Lid", "c": "Supply", "mu": "PACK", "su": "-", "f": null, "pd": "100ea/pk"}, {"n": "Logo Napkin", "c": "Supply", "mu": "BOX", "su": "PACK", "f": 8.0, "pd": "8pack/box"}, {"n": "Logo Chopstick", "c": "Supply", "mu": "BOX", "su": "-", "f": null, "pd": "2000ea/box"}, {"n": "Logo Grease Paper (S)", "c": "Supply", "mu": "BOX", "su": "PACK", "f": 5.0, "pd": "(5pk x 800ea)/box"}, {"n": "Logo Grease Paper (L)", "c": "Supply", "mu": "BOX", "su": "PACK", "f": 5.0, "pd": "(5pk x 1000ea)/box"}, {"n": "Produce Bag", "c": "Supply", "mu": "BOX", "su": "PACK", "f": 4.0, "pd": "4roll/box"}, {"n": "3.25 oz Portion Cup", "c": "Supply", "mu": "PACK", "su": "-", "f": null, "pd": "(50pk x 50ea)/box"}, {"n": "3.25 oz Portion Cup Lid", "c": "Supply", "mu": "PACK", "su": "-", "f": null, "pd": "(20pk x 125ea)/box"}, {"n": "To-Go Box #1 (leftover container)", "c": "Supply", "mu": "BOX", "su": "PACK", "f": 9.0, "pd": "(9pk x 50ea)/box"}, {"n": "To-Go Box #2 (leftover container)", "c": "Supply", "mu": "BOX", "su": "PACK", "f": 4.0, "pd": "(4pk x 50ea)/box"}, {"n": "2oz Cup", "c": "Supply", "mu": "BOX", "su": "PACK", "f": 50.0, "pd": "(50pk x 50ea)/box"}, {"n": "2oz Cup Lid", "c": "Supply", "mu": "BOX", "su": "PACK", "f": 50.0, "pd": "(50pk x 50ea)/box"}, {"n": "12 oz Paper Cup", "c": "Supply", "mu": "PACK", "su": "-", "f": null, "pd": "50ea/pk"}, {"n": "12 oz Paper Cup Lid", "c": "Supply", "mu": "PACK", "su": "-", "f": null, "pd": "50ea/pk"}, {"n": "14 oz PET Cup", "c": "Supply", "mu": "BOX", "su": "PACK", "f": 20.0, "pd": "(20pack x 50ea)/box"}, {"n": "14 oz PET Cup Lid", "c": "Supply", "mu": "PACK", "su": "-", "f": null, "pd": "50ea/pack"}, {"n": "POS Roll Paper 3 1/8'' x 200'", "c": "Supply", "mu": "BOX", "su": "PACK", "f": 20.0, "pd": "(20pk x 50ea)/box"}, {"n": "GP Nitrile Glove (L)", "c": "Supply", "mu": "BOX", "su": "PACK", "f": 10.0, "pd": "(10pk x 100ea)/box"}, {"n": "Trash Bag 33 Gallon", "c": "Supply", "mu": "BOX", "su": "PACK", "f": 4.0, "pd": "(4roll x 25ea)/box"}, {"n": "Trash Bag 55 Gallon", "c": "Supply", "mu": "BOX", "su": "PACK", "f": 4.0, "pd": "(4roll x 25ea)/box"}, {"n": "Roll Paper Towel", "c": "Supply", "mu": "BOX", "su": "PACK", "f": 12.0, "pd": "12roll/box"}, {"n": "Toilet Paper", "c": "Supply", "mu": "BOX", "su": "PACK", "f": 48.0, "pd": "48roll/box"}, {"n": "Toilet Seat Cover", "c": "Supply", "mu": "BOX", "su": "PACK", "f": 20.0, "pd": "(20pack x 250ea)/box"}, {"n": "Straw", "c": "Supply", "mu": "PACK", "su": "-", "f": null, "pd": "300ea/pk"}, {"n": "Fork", "c": "Supply", "mu": "BOX", "su": "PACK", "f": 10.0, "pd": "(10pk x 100ea)/box"}, {"n": "Crispy Powder (Frying)", "c": "Powder", "mu": "BOX", "su": "EA", "f": 2.0, "pd": "(5kg x 2ea)/box"}, {"n": "Original Powder (Deep Frying)", "c": "Powder", "mu": "BOX", "su": "EA", "f": 2.0, "pd": "(5kg x 2ea)/box"}, {"n": "Marinade Powder", "c": "Powder", "mu": "BOX", "su": "-", "f": null, "pd": "18kg"}, {"n": "Cheese Seasoning Powder", "c": "Powder", "mu": "BOX", "su": "EA", "f": 10.0, "pd": "(1kg x 10ea)/box"}, {"n": "Cinnamon Sugar for Twist Doughnut", "c": "Powder", "mu": "BOX", "su": "PACK", "f": 10.0, "pd": "(1kg x 10pk)/box"}, {"n": "Rice Cake 아씨 신당동 떡볶이 떡", "c": "Food", "mu": "BOX", "su": "PACK", "f": 20.0, "pd": "20pk/box"}, {"n": "Kimchi (10kg)", "c": "Food", "mu": "BOX", "su": "-", "f": null, "pd": "10kg/box"}, {"n": "Master Chef Canola Frying Oil (35 lbs)", "c": "Food", "mu": "BOX", "su": "-", "f": null, "pd": "35lb/box"}, {"n": "Seaweed flake 김가루 (500g)", "c": "Food", "mu": "PACK", "su": "-", "f": null, "pd": null}, {"n": "Calrose Rice #40 Lbs", "c": "Food", "mu": "BAG", "su": "-", "f": null, "pd": "40lbs/bag"}, {"n": "Sea Snail 유동 자연산 골뱅이", "c": "Food", "mu": "BOX", "su": "EA", "f": 24.0, "pd": "24ea/box"}, {"n": "Spam", "c": "Food", "mu": "PACK", "su": "EA", "f": 8.0, "pd": "8ea/pk"}, {"n": "Sempio Wheat Noodles 샘표 진공 소면 (2.5KG*4)", "c": "Food", "mu": "BOX", "su": "EA", "f": 4.0, "pd": "(2.5kg x 4ea)/box"}, {"n": "Corn Syrup 물엿", "c": "Food", "mu": "BOX", "su": "EA", "f": 6.0, "pd": "(2.45kg x 6ea)/box"}, {"n": "MSG /Miwon 미원", "c": "Food", "mu": "PACK", "su": "-", "f": null, "pd": null}, {"n": "Korean Chili powder 고운 고춧가루 (5 lbs)", "c": "Food", "mu": "PACK", "su": "-", "f": null, "pd": null}, {"n": "Signature Sauce", "c": "Sauce", "mu": "BOX", "su": "PACK", "f": 6.0, "pd": "(3kg x 6pk)/box"}, {"n": "Hot Spicy Sauce", "c": "Sauce", "mu": "BOX", "su": "PACK", "f": 6.0, "pd": "(3kg x 6pk)/box"}, {"n": "Smoky Hot Sauce", "c": "Sauce", "mu": "BOX", "su": "PACK", "f": 6.0, "pd": "(2kg x 6pk)/box"}, {"n": "Smoky Mayo Sauce", "c": "Sauce", "mu": "BOX", "su": "PACK", "f": 10.0, "pd": "10pk/box"}, {"n": "Blazing Mayo Sauce", "c": "Sauce", "mu": "BOX", "su": "PACK", "f": 10.0, "pd": "(1kg x 10pk)/box"}, {"n": "Garlic Sauce", "c": "Sauce", "mu": "BOX", "su": "PACK", "f": 10.0, "pd": "(1kg x 10pk)/box"}, {"n": "White Garlic Sauce", "c": "Sauce", "mu": "BOX", "su": "PACK", "f": 6.0, "pd": "(2kg x 6pk)/box"}, {"n": "Soy Sauce", "c": "Sauce", "mu": "BOX", "su": "PACK", "f": 10.0, "pd": "(1kg x 10pk)/box"}, {"n": "Honey Soy Sauce", "c": "Sauce", "mu": "BOX", "su": "PACK", "f": 10.0, "pd": "(1kg x 10pk)/box"}, {"n": "Gangjung Sauce", "c": "Sauce", "mu": "BOX", "su": "PACK", "f": 6.0, "pd": "(3kg x 6pk)/box"}, {"n": "Buldak Sauce", "c": "Sauce", "mu": "BOX", "su": "PACK", "f": 6.0, "pd": "(2kg x 6pk)/box"}, {"n": "Ddukbokki Sauce", "c": "Sauce", "mu": "BOX", "su": "PACK", "f": 6.0, "pd": "(2kg x 6pk)/box"}, {"n": "Golbaengi Sauce", "c": "Sauce", "mu": "BOX", "su": "PACK", "f": 6.0, "pd": "(2kg x 6pk)/box"}, {"n": "Fish Cake Soup Base", "c": "Sauce", "mu": "BOX", "su": "EA", "f": 10.0, "pd": "(1kg x 10ea)/box"}, {"n": "Signature Sauce To-Go", "c": "Sauce", "mu": "BOX", "su": "EA", "f": 100.0, "pd": "(1kg x 100ea)/box"}, {"n": "Hot Spicy Sauce To-Go", "c": "Sauce", "mu": "BOX", "su": "EA", "f": 100.0, "pd": "(1kg x 100ea)/box"}, {"n": "Smoky Hot Sauce To-Go", "c": "Sauce", "mu": "BOX", "su": "EA", "f": 100.0, "pd": "(1kg x 100ea)/box"}, {"n": "Smoky Mayo Sauce To-Go", "c": "Sauce", "mu": "BOX", "su": "EA", "f": 100.0, "pd": "(1kg x 100ea)/box"}, {"n": "Blazing Mayo Sauce To-Go", "c": "Sauce", "mu": "BOX", "su": "EA", "f": 100.0, "pd": "(1kg x 100ea)/box"}, {"n": "Garlic Sauce To-Go", "c": "Sauce", "mu": "BOX", "su": "EA", "f": 100.0, "pd": "(1kg x 100ea)/box"}, {"n": "Honey Soy Sauce To-Go", "c": "Sauce", "mu": "BOX", "su": "EA", "f": 100.0, "pd": "(1kg x 100ea)/box"}, {"n": "Pickled Radish Cube (S)", "c": "Pickled Radish", "mu": "BOX", "su": "EA", "f": 150.0, "pd": "(120g x 150ea)/box"}, {"n": "Pickled Radish Cube (L)", "c": "Pickled Radish", "mu": "BOX", "su": "EA", "f": 90.0, "pd": "(240g x 90ea)/box"}, {"n": "Pickled Radish Cube (Bulk)", "c": "Pickled Radish", "mu": "BOX", "su": "EA", "f": 4.0, "pd": "(5kg x 4ea)/box"}, {"n": "Mozzar Cheese Ball", "c": "Frozen", "mu": "BOX", "su": "PACK", "f": 8.0, "pd": "(400g x 8pk)/box"}, {"n": "Twist Donut", "c": "Frozen", "mu": "BOX", "su": "PACK", "f": 4.0, "pd": "(1,200g x 4pk)/box"}, {"n": "Giant Seaweed Roll 대왕김말이", "c": "Frozen", "mu": "BOX", "su": "PACK", "f": 10.0, "pd": "(10pk x 10ea)/box"}, {"n": "Udon Noodle 우동면", "c": "Frozen", "mu": "BOX", "su": "PACK", "f": 8.0, "pd": "(8pk x 5ea)/box"}, {"n": "Fish Cake 사각어묵", "c": "Frozen", "mu": "BOX", "su": "PACK", "f": 10.0, "pd": "(1kg x 10 pk)/box"}, {"n": "Fish Cake Skewer 어묵꼬치", "c": "Frozen", "mu": "BOX", "su": "PACK", "f": 10.0, "pd": "10pk/box"}, {"n": "Spicy Pork Dumplings 매운 왕교자", "c": "Frozen", "mu": "BOX", "su": "PACK", "f": 12.0, "pd": "(680g x 12pk)/box"}, {"n": "Beef Dumplings 소고기 왕교자", "c": "Frozen", "mu": "BOX", "su": "PACK", "f": 12.0, "pd": "(680g x 12pk)/box"}, {"n": "Japchae 잡채", "c": "Frozen", "mu": "BOX", "su": "PACK", "f": 14.0, "pd": "(1kg x 14pk)/box"}, {"n": "Coke", "c": "Beverage", "mu": "BOX", "su": "EA", "f": 35.0, "pd": "35ea/box"}, {"n": "Sprite", "c": "Beverage", "mu": "BOX", "su": "EA", "f": 35.0, "pd": "35ea/box"}, {"n": "Diet Coke", "c": "Beverage", "mu": "BOX", "su": "EA", "f": 35.0, "pd": "35ea/box"}, {"n": "Terra 테라", "c": "Alchole", "mu": "BOX", "su": "EA", "f": 12.0, "pd": "12ea/box"}, {"n": "Krush 크러쉬", "c": "Alchole", "mu": "BOX", "su": "EA", "f": 12.0, "pd": "12ea/box"}, {"n": "Fresh 참이슬 프레쉬", "c": "Alchole", "mu": "BOX", "su": "EA", "f": 20.0, "pd": "20ea/box"}, {"n": "Jinro 진로", "c": "Alchole", "mu": "BOX", "su": "EA", "f": 20.0, "pd": "20ea/box"}, {"n": "Zero Soju 새로소주", "c": "Alchole", "mu": "BOX", "su": "EA", "f": 20.0, "pd": "20ea/box"}, {"n": "Zero Soju Apricot 새로소주 살구", "c": "Alchole", "mu": "BOX", "su": "EA", "f": 20.0, "pd": "20ea/box"}];
+
+let state = {}; // idx -> {m:'', s:''}
+let saveTimer = null;
+
+function round2(n){ return Math.round(n*100)/100; }
+
+function hasEntry(m, s){
+  return (m !== '' && m !== undefined) || (s !== '' && s !== undefined);
+}
+
+function computeValue(item, m, s){
+  const mv = parseFloat(m); const mNum = isNaN(mv) ? 0 : mv;
+  if(item.f){
+    const sv = parseFloat(s); const sNum = isNaN(sv) ? 0 : sv;
+    return round2(mNum + sNum/item.f);
+  }
+  return round2(mNum);
+}
+
+function fmtResult(item, m, s){
+  if(!hasEntry(m, s)) return '—';
+  const v = computeValue(item, m, s);
+  return v.toFixed(2) + ' ' + item.mu;
+}
+
+// ---------- render ----------
+const cats = [...new Set(ITEMS.map(i=>i.c))];
+const mainEl = document.getElementById('main');
+const catnavEl = document.getElementById('catnav');
+
+cats.forEach(cat=>{
+  const chip = document.createElement('div');
+  chip.className='catchip';
+  chip.id='chip-'+cat;
+  chip.textContent = cat;
+  chip.onclick = ()=> document.getElementById('sec-'+cat).scrollIntoView({behavior:'smooth', block:'start'});
+  catnavEl.appendChild(chip);
+});
+
+ITEMS.forEach((item, idx)=>{
+  item.idx = idx;
+  if(idx===0 || ITEMS[idx-1].c !== item.c){
+    const sec = document.createElement('div');
+    sec.className='section'; sec.id='sec-'+item.c;
+    sec.innerHTML = `<div class="section-head"><h2>${item.c}</h2><span class="count" id="cnt-${item.c}">0/0</span></div>`;
+    mainEl.appendChild(sec);
+  }
+  const sec = document.getElementById('sec-'+item.c);
+
+  const card = document.createElement('div');
+  card.className='item'; card.id='item-'+idx;
+  card.innerHTML = `
+    <div class="item-head">
+      <div>
+        <div class="item-name">${item.n}</div>
+        <div class="item-pack">${item.pd ? item.pd : (item.mu)}</div>
+      </div>
+      <div class="result-chip" id="chip-result-${idx}">—</div>
+    </div>
+    <div class="qty-row">
+      <div class="qty-block">
+        <span class="qty-label">${item.mu}</span>
+        <div class="qtybox">
+          <input inputmode="decimal" id="m-${idx}" data-i="${idx}" data-f="m" placeholder="0">
+        </div>
+      </div>
+      <div class="qty-block ${item.f?'':'disabled'}">
+        <span class="qty-label">${item.su==='-'?'No sub-unit':item.su}</span>
+        <div class="qtybox">
+          <input inputmode="decimal" id="s-${idx}" data-i="${idx}" data-f="s" placeholder="0" ${item.f?'':'disabled'}>
+        </div>
+      </div>
+    </div>
+    <div class="note-flash" id="flash-${idx}"></div>
+  `;
+  sec.appendChild(card);
+});
+
+// pin category nav directly under the header, whatever its rendered height is
+function pinCatnav(){
+  const h = document.getElementById('topbar').getBoundingClientRect().height;
+  catnavEl.style.top = h + 'px';
+}
+pinCatnav();
+window.addEventListener('resize', pinCatnav);
+
+// ---------- event delegation ----------
+mainEl.addEventListener('input', (e)=>{
+  if(e.target.matches('input[data-i]')){
+    // allow digits and a single decimal point
+    let v = e.target.value.replace(/[^0-9.]/g,'');
+    const firstDot = v.indexOf('.');
+    if(firstDot !== -1){
+      v = v.slice(0, firstDot+1) + v.slice(firstDot+1).replace(/\./g,'');
+    }
+    if(v !== e.target.value) e.target.value = v;
+  }
+});
+
+mainEl.addEventListener('change', (e)=>{
+  if(e.target.matches('input[data-i]')){
+    onQtyChange(+e.target.dataset.i, e.target.dataset.f);
+  }
+});
+
+function onQtyChange(i, changedField){
+  const item = ITEMS[i];
+  const mInput = document.getElementById('m-'+i);
+  const sInput = document.getElementById('s-'+i);
+  let m = mInput.value;
+  let s = sInput ? sInput.value : '';
+
+  // auto-carry: if sub qty reaches/exceeds the conversion factor, roll it into main qty
+  if(item.f && s !== ''){
+    let sv = parseFloat(s); if(isNaN(sv)) sv=0;
+    if(sv >= item.f){
+      const carry = Math.floor(sv/item.f + 1e-9);
+      let mv = parseFloat(m||'0'); if(isNaN(mv)) mv=0;
+      mv = round2(mv + carry);
+      sv = round2(sv - carry*item.f);
+      m = String(mv); s = sv === 0 ? '' : String(sv);
+      mInput.value = m; sInput.value = s;
+      const flash = document.getElementById('flash-'+i);
+      flash.textContent = `↻ Auto-converted: ${item.f} ${item.su} → 1 ${item.mu}`;
+      setTimeout(()=>{ if(flash.textContent.startsWith('↻')) flash.textContent=''; }, 2600);
+    }
+  }
+
+  state[i] = {m, s};
+  const chip = document.getElementById('chip-result-'+i);
+  chip.textContent = fmtResult(item, m, s);
+  const card = document.getElementById('item-'+i);
+  card.classList.toggle('touched', hasEntry(m, s));
+
+  updateProgress();
+  scheduleSave();
+}
+
+function updateProgress(){
+  let done = 0;
+  ITEMS.forEach((item,i)=>{ if(state[i] && hasEntry(state[i].m, state[i].s)) done++; });
+  document.getElementById('progressCount').textContent = done;
+  document.getElementById('progressFill').style.width = (done/ITEMS.length*100)+'%';
+
+  cats.forEach(cat=>{
+    const items = ITEMS.filter(x=>x.c===cat);
+    const doneCat = items.filter(x=> state[x.idx] && hasEntry(state[x.idx].m, state[x.idx].s)).length;
+    document.getElementById('cnt-'+cat).textContent = doneCat+'/'+items.length;
+    document.getElementById('chip-'+cat).classList.toggle('done', doneCat===items.length);
+  });
+}
+
+// ---------- persistence ----------
+function scheduleSave(){
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveDraft, 400);
+}
+async function saveDraft(){
+  try{
+    localStorage.setItem('inventory_draft', JSON.stringify({
+      date: document.getElementById('countDate').value,
+      state
+    }));
+  }catch(err){ console.error('save failed', err); }
+}
+async function loadDraft(){
+  try{
+    const raw = localStorage.getItem('inventory_draft');
+    if(raw){
+      const data = JSON.parse(raw);
+      state = data.state || {};
+      if(data.date) document.getElementById('countDate').value = data.date;
+      Object.keys(state).forEach(i=>{
+        const item = ITEMS[i]; if(!item) return;
+        const {m,s} = state[i];
+        const mInput = document.getElementById('m-'+i);
+        const sInput = document.getElementById('s-'+i);
+        if(mInput) mInput.value = m || '';
+        if(sInput && item.f) sInput.value = s || '';
+        const chip = document.getElementById('chip-result-'+i);
+        if(chip) chip.textContent = fmtResult(item, m||'', s||'');
+        const card = document.getElementById('item-'+i);
+        if(card) card.classList.toggle('touched', hasEntry(m||'', s||''));
+      });
+      updateProgress();
+    }
+  }catch(err){ /* no draft yet */ }
+}
+
+document.getElementById('countDate').addEventListener('change', scheduleSave);
+if(!document.getElementById('countDate').value){
+  document.getElementById('countDate').value = new Date().toISOString().slice(0,10);
+}
+
+document.getElementById('resetBtn').addEventListener('click', async ()=>{
+  if(!confirm('Clear all entries for this count? Anything not copied yet will be lost.')) return;
+  state = {};
+  ITEMS.forEach((item,i)=>{
+    const mInput = document.getElementById('m-'+i);
+    const sInput = document.getElementById('s-'+i);
+    if(mInput) mInput.value='';
+    if(sInput) sInput.value='';
+    document.getElementById('chip-result-'+i).textContent='—';
+    document.getElementById('item-'+i).classList.remove('touched');
+  });
+  updateProgress();
+  await saveDraft();
+});
+
+document.getElementById('jumpBtn').addEventListener('click', ()=>{
+  const target = ITEMS.find(item => !state[item.idx] || !hasEntry(state[item.idx].m, state[item.idx].s));
+  if(target){
+    document.getElementById('item-'+target.idx).scrollIntoView({behavior:'smooth', block:'center'});
+    document.getElementById('item-'+target.idx).style.outline = '2px solid var(--accent)';
+    setTimeout(()=>{ document.getElementById('item-'+target.idx).style.outline=''; }, 1200);
+  } else {
+    alert('All 90 items are entered.');
+  }
+});
+
+// ---------- result panel ----------
+const overlay = document.getElementById('overlay');
+const outArea = document.getElementById('outArea');
+let viewMode = 'values';
+
+function buildOutput(){
+  const missing = [];
+  const lines = ITEMS.map((item, i)=>{
+    const st = state[i];
+    const has = st && hasEntry(st.m, st.s);
+    if(!has) missing.push(item.n);
+    const val = has ? computeValue(item, st.m, st.s) : 0;
+    return viewMode==='values' ? String(val) : `${item.n}\t${val}`;
+  });
+  outArea.value = lines.join('\n');
+  document.getElementById('missingNote').textContent = missing.length
+    ? `⚠ ${missing.length} item(s) not entered, shown as 0: ${missing.slice(0,6).join(', ')}${missing.length>6?' + '+(missing.length-6)+' more':''}`
+    : '✓ All 90 items entered';
+  document.getElementById('panelHint').innerHTML = viewMode==='values'
+    ? `Click cell <b>L2</b> in the '인벤&amp;주문' sheet, then paste. All 90 items fill L2:L91 in order.`
+    : `Names + values for a quick sanity check. Use "Values only" mode to paste directly into the sheet.`;
+}
+
+document.getElementById('fabBtn').addEventListener('click', ()=>{
+  buildOutput();
+  overlay.classList.add('open');
+});
+document.getElementById('closePanel').addEventListener('click', ()=> overlay.classList.remove('open'));
+overlay.addEventListener('click', (e)=>{ if(e.target===overlay) overlay.classList.remove('open'); });
+
+document.getElementById('viewValuesOnly').addEventListener('click', ()=>{
+  viewMode='values';
+  document.getElementById('viewValuesOnly').classList.add('active');
+  document.getElementById('viewWithNames').classList.remove('active');
+  buildOutput();
+});
+document.getElementById('viewWithNames').addEventListener('click', ()=>{
+  viewMode='names';
+  document.getElementById('viewWithNames').classList.add('active');
+  document.getElementById('viewValuesOnly').classList.remove('active');
+  buildOutput();
+});
+
+document.getElementById('selectAllBtn').addEventListener('click', ()=>{
+  outArea.focus(); outArea.select();
+});
+
+document.getElementById('copyBtn').addEventListener('click', async ()=>{
+  try{
+    await navigator.clipboard.writeText(outArea.value);
+  }catch(err){
+    outArea.focus(); outArea.select(); document.execCommand('copy');
+  }
+  const toast = document.getElementById('toast');
+  toast.classList.add('show');
+  setTimeout(()=> toast.classList.remove('show'), 1600);
+});
+
+loadDraft();
+</script>
+</body>
+</html>
