@@ -248,58 +248,19 @@
   padding-left: 20px !important;
   padding-right: 20px !important;
 }
-/* 모바일 전용 반응형 튀어나옴 방지 스타일 */
-@media (max-width: 768px) {
-  /* 상단바 전체 패딩 감축 및 자식 요소 넘침 방지 */
-  .topbar {
-    padding-left: 12px !important;
-    padding-right: 12px !important;
-    overflow: hidden !important;
-  }
-  
-  .topbar-row {
-    max-width: 100% !important;
-    gap: 8px !important;
-  }
+/* Count Date 크기 축소 */
+.date-field label {
+  font-size: 10px !important;
+  letter-spacing: 0.5px !important;
+}
 
-  /* 로고 및 타이틀 텍스트 크기 모바일 축소 */
-  .brand-header {
-    gap: 8px !important;
-    min-width: 0 !important;
-    flex: 1 !important;
-  }
-
-  .brand-logo-img {
-    width: 40px !important;
-    height: 40px !important;
-    min-width: 40px !important;
-  }
-
-  .brand-title-group .eyebrow {
-    font-size: 11px !important;
-  }
-
-  .brand-title-group h1 {
-    font-size: 17px !important;
-  }
-
-  /* 날짜 입력창 크기 모바일 축소 */
-  .date-field input {
-    width: 110px !important;
-    font-size: 11px !important;
-    padding: 4px 6px !important;
-  }
-
-  /* Progress 및 버튼 좌우 여백 맞춤 */
-  .progress-wrap,
-  .actions-row {
-    max-width: 100% !important;
-    padding-left: 12px !important;
-    padding-right: 12px !important;
-    margin-left: 0 !important;
-    margin-right: 0 !important;
-  }
-}  
+.date-field input {
+  font-size: 12px !important;
+  padding: 3px 6px !important;
+  height: 28px !important;
+  width: auto !important;
+  max-width: 110px !important;
+}
 </style>
 </head>
 <body>
